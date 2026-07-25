@@ -1,0 +1,43 @@
+services:
+  ros2-pi:
+    # Build image ARM64 dành cho Raspberry Pi 5.
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.pi
+
+    image: ros2-jazzy-pi:latest
+    container_name: ros2-pi
+
+    # Giữ terminal tương tác khi container chạy nền.
+    stdin_open: true
+    tty: true
+
+    # DDS dùng trực tiếp network của Pi để giao tiếp với laptop.
+    network_mode: host
+    working_dir: /ros2-ws
+
+    environment:
+      # Hai giá trị này phải giống container trên laptop.
+      ROS_DOMAIN_ID: "0"
+      RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
+
+    volumes:
+      # Đồng bộ workspace với thư mục dự án trên Raspberry Pi.
+      - ..:/ros2-ws
+
+    # Cấp quyền theo nhóm cho serial và camera.
+    group_add:
+      - dialout
+      - video
+
+    # Chỉ bật thiết bị thực sự tồn tại trên Raspberry Pi.
+    # Docker sẽ không khởi động nếu khai báo một thiết bị không tồn tại.
+    devices:
+      - /dev/ttyUSB0:/dev/ttyUSB0
+      # - /dev/ttyAMA0:/dev/ttyAMA0
+      # - /dev/i2c-1:/dev/i2c-1
+      # - /dev/video0:/dev/video0
+      # - /dev/gpiochip0:/dev/gpiochip0
+
+    command: bash
+    restart: unless-stopped

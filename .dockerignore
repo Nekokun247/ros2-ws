@@ -1,0 +1,18 @@
+# Build artifacts của ROS 2 không được đưa vào Docker build context.
+build/
+install/
+log/
+
+# Môi trường Python cục bộ.
+.venv/
+venv/
+__pycache__/
+*.pyc
+
+# Git và metadata của trình soạn thảo.
+.git/
+.vscode/
+.idea/
+
+# Metadata phát sinh khi sao chép file từ Windows.
+*:Zone.Identifier

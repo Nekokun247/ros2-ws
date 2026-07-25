@@ -1,0 +1,61 @@
+services:
+  ros2-pc:
+    # ========================================================================
+    # IMAGE VÀ CONTAINER
+    # ========================================================================
+
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.pc
+
+    image: ros2-jazzy-pc:latest
+    container_name: ros2-pc
+
+    # Giữ terminal tương tác khi container chạy nền.
+    stdin_open: true
+    tty: true
+
+    # ========================================================================
+    # NETWORK VÀ WORKSPACE
+    # ========================================================================
+
+    # Host network giúp ROS 2 DDS giao tiếp trực tiếp với Raspberry Pi 5.
+    network_mode: host
+    working_dir: /ros2-ws
+
+    # ========================================================================
+    # GPU VÀ ĐỒ HỌA WSL2
+    # ========================================================================
+
+    # Cho phép container truy cập GPU được Docker Desktop cung cấp.
+    gpus: all
+
+    devices:
+      - /dev/dxg:/dev/dxg
+
+    environment:
+      # ROS 2: phải giống cấu hình trên Raspberry Pi 5.
+      ROS_DOMAIN_ID: "0"
+      RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
+
+      # GUI qua WSLg/X11.
+      DISPLAY: ${DISPLAY}
+      WAYLAND_DISPLAY: ${WAYLAND_DISPLAY}
+      XDG_RUNTIME_DIR: ${XDG_RUNTIME_DIR}
+      QT_X11_NO_MITSHM: "1"
+
+      # NVIDIA GPU qua Mesa D3D12 trong WSL2.
+      GALLIUM_DRIVER: d3d12
+      MESA_D3D12_DEFAULT_ADAPTER_NAME: NVIDIA
+      LD_LIBRARY_PATH: /usr/lib/wsl/lib
+
+    volumes:
+      # Đồng bộ workspace với thư mục dự án trên máy tính.
+      - ..:/ros2-ws
+
+      # Thư viện và socket đồ họa của WSL2/WSLg.
+      - /usr/lib/wsl:/usr/lib/wsl:ro
+      - /mnt/wslg:/mnt/wslg
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+
+    command: bash

@@ -1,0 +1,17 @@
+# ROS 2 build outputs.
+build/
+install/
+log/
+
+# Python.
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Editor và hệ điều hành.
+.vscode/
+.idea/
+.DS_Store
+*:Zone.Identifier
