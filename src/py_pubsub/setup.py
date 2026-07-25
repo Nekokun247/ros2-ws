@@ -24,6 +24,8 @@ setup(
     },
     entry_points={
         'console_scripts': [
+            'talker = py_pubsub.py_pub:main',
+            'listener = py_pubsub.py_sub:main',
         ],
     },
 )
