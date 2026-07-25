@@ -126,9 +126,9 @@ fi
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
+[[ -f /root/.ros2-functions.zsh ]] && source /root/.ros2-functions.zsh
 
 # === ROS2 Docker ===
-
 # Các alias Docker chỉ được khai báo trên máy host có Docker CLI.
 if command -v docker >/dev/null 2>&1; then
   # Start container và vào container

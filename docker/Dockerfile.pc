@@ -67,6 +67,7 @@ RUN git clone --depth=1 https://github.com/ohmyzsh/ohmyzsh.git "$ZSH" \
 # Sao chép cấu hình shell và Powerlevel10k từ thư mục docker của dự án.
 COPY docker/zshrc /root/.zshrc
 COPY docker/p10k.zsh /root/.p10k.zsh
+COPY docker/ros2-functions.zsh /root/.ros2-functions.zsh
 
 # Giữ Bash hoạt động và tự động nạp môi trường ROS 2 khi cần sử dụng.
 RUN printf '%s\n' \
