@@ -25,3 +25,24 @@ ros2-pkg-create-python() {
         --license Apache-2.0 \
         "$1"
 }
+
+# Build một hoặc nhiều package được chỉ định.
+# Ví dụ: colcon-build package_a package_b
+colcon-build() {
+    if [[ $# -eq 0 ]]; then
+        echo "Usage: colcon-build <package_name> [package_name...]"
+        return 1
+    fi
+
+    colcon build \
+        --symlink-install \
+        --packages-select "$@" || return 1
+
+    source install/setup.zsh
+}
+
+# Build toàn bộ package trong workspace.
+colcon-build-all() {
+    colcon build --symlink-install || return 1
+    source install/setup.zsh
+}
