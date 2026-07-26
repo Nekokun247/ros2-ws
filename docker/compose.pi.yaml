@@ -33,8 +33,8 @@ services:
 
     # Chỉ bật thiết bị thực sự tồn tại trên Raspberry Pi.
     # Docker sẽ không khởi động nếu khai báo một thiết bị không tồn tại.
-    devices:
-      - /dev/ttyUSB0:/dev/ttyUSB0
+    # devices:
+      # - /dev/ttyUSB0:/dev/ttyUSB0
       # - /dev/ttyAMA0:/dev/ttyAMA0
       # - /dev/i2c-1:/dev/i2c-1
       # - /dev/video0:/dev/video0
