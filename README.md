@@ -62,6 +62,16 @@ git config --global --list
 gh auth login
 gh auth status
 ```
+Lệnh Git:
+
+````bash
+# Push
+git add .
+git commit -m ""
+git push origin main
+# Pull
+git pull --rebase origin main
+````
 
 ## 4. Tùy chỉnh terminal
 
