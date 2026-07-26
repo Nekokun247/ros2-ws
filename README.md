@@ -262,6 +262,28 @@ ros2 --help
 Thêm vào `~/.zshrc`:
 
 ```zsh
+# === ROS2 Docker ===
+
+# Start container và vào container
+alias ros2-start='docker compose -f docker/compose.pc.yaml up -d && docker compose -f docker/compose.pc.yaml exec ros2-pc /bin/zsh'
+
+# Vào container đang chạy
+alias ros2-run='docker compose -f docker/compose.pc.yaml exec ros2-pc /bin/zsh'
+
+# Build image và khởi động container
+alias ros2-build='docker compose -f docker/compose.pc.yaml up -d --build'
+
+# Build lại image từ đầu
+alias ros2-rebuild='docker compose -f docker/compose.pc.yaml down && docker compose -f docker/compose.pc.yaml build --no-cache && docker compose -f docker/compose.pc.yaml up -d'
+
+# Dừng container
+alias ros2-stop='docker compose -f docker/compose.pc.yaml down'
+
+# Kiểm tra trạng thái container
+alias ros2-status='docker compose -f docker/compose.pc.yaml ps'
+```
+
+```zsh
 # Build một hoặc nhiều package được chỉ định.
 colcon-build() {
     if [[ $# -eq 0 ]]; then
