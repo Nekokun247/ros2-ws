@@ -34,12 +34,20 @@ services:
       ROS_AUTOMATIC_DISCOVERY_RANGE: "SUBNET"
 
       # Chuyển tiếp giao diện đồ họa từ container qua WSLg/X11.
+      # WSLg là tính năng của WSL2 (không phải Docker Desktop) nên vẫn dùng được.
       DISPLAY: "${DISPLAY}"
       WAYLAND_DISPLAY: "${WAYLAND_DISPLAY}"
       XDG_RUNTIME_DIR: "${XDG_RUNTIME_DIR}"
       QT_X11_NO_MITSHM: "1"
 
-      # Sử dụng GPU NVIDIA thông qua Mesa D3D12 trên WSL2.
+      # --- CUDA compute (nvidia-smi, các tác vụ CUDA) qua NVIDIA Container Toolkit ---
+      NVIDIA_VISIBLE_DEVICES: "all"
+      NVIDIA_DRIVER_CAPABILITIES: "all"
+
+      # --- OpenGL rendering (rviz2, gz sim, glxinfo) qua Mesa D3D12 + /dev/dxg ---
+      # /dev/dxg là thiết bị paravirtualization GPU của chính nhân WSL2 (dxgkrnl),
+      # KHÔNG phải cơ chế riêng của Docker Desktop, nên vẫn cần dùng dù đã chuyển
+      # sang Docker Engine cài trực tiếp trong WSL2.
       GALLIUM_DRIVER: "d3d12"
       MESA_D3D12_DEFAULT_ADAPTER_NAME: "NVIDIA"
       LD_LIBRARY_PATH: "/usr/lib/wsl/lib"
@@ -47,10 +55,10 @@ services:
     # ========================================================================
     # GPU VÀ THIẾT BỊ
     # ========================================================================
-    # Cho phép container sử dụng GPU do Docker Desktop cung cấp.
+    # CUDA compute qua NVIDIA Container Toolkit (CDI).
     gpus: all
 
-    # Thiết bị DirectX GPU của WSL2.
+    # Thiết bị GPU paravirtualization của WSL2, cần cho OpenGL qua Mesa D3D12.
     devices:
       - /dev/dxg:/dev/dxg
 
@@ -64,10 +72,12 @@ services:
       # File nguồn ./cyclonedds.xml phải tồn tại và phải là file, không phải thư mục.
       - ./cyclonedds.xml:/config/cyclonedds.xml:ro
 
-      # Thư viện và socket đồ họa của WSL2/WSLg.
+      # Thư viện Mesa D3D12 (libd3d12.so, libdxcore.so) do WSL2 cung cấp — bắt buộc cho OpenGL.
       - /usr/lib/wsl:/usr/lib/wsl:ro
-      - /mnt/wslg:/mnt/wslg
+
+      # Socket đồ họa X11/Wayland do WSLg cung cấp.
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      - /mnt/wslg:/mnt/wslg
 
     # Giữ container hoạt động để truy cập và chạy các node ROS 2 thủ công.
     command: bash
