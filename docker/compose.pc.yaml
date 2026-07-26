@@ -37,6 +37,7 @@ services:
       # ROS 2: phải giống cấu hình trên Raspberry Pi 5.
       ROS_DOMAIN_ID: "0"
       RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
+      ROS_AUTOMATIC_DISCOVERY_RANGE: SUBNET
 
       # GUI qua WSLg/X11.
       DISPLAY: ${DISPLAY}
