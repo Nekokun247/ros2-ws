@@ -3,7 +3,6 @@ services:
     # ========================================================================
     # IMAGE VÀ CONTAINER
     # ========================================================================
-
     build:
       context: ..
       dockerfile: docker/Dockerfile.pc
@@ -11,48 +10,58 @@ services:
     image: ros2-jazzy-pc:latest
     container_name: ros2-pc
 
-    # Giữ terminal tương tác khi container chạy nền.
+    # Giữ STDIN và TTY để có thể truy cập shell tương tác bằng docker compose exec.
     stdin_open: true
     tty: true
 
     # ========================================================================
-    # NETWORK VÀ WORKSPACE
+    # MẠNG VÀ WORKSPACE
     # ========================================================================
-
-    # Host network giúp ROS 2 DDS giao tiếp trực tiếp với Raspberry Pi 5.
+    # Dùng trực tiếp network của WSL2 để DDS giao tiếp với Raspberry Pi 5.
     network_mode: host
     working_dir: /ros2-ws
 
     # ========================================================================
-    # GPU VÀ ĐỒ HỌA WSL2
+    # BIẾN MÔI TRƯỜNG ROS 2
     # ========================================================================
-
-    # Cho phép container truy cập GPU được Docker Desktop cung cấp.
-    gpus: all
-
-    devices:
-      - /dev/dxg:/dev/dxg
-
     environment:
+      # Hai thiết bị phải dùng cùng Domain ID và cùng RMW implementation.
       ROS_DOMAIN_ID: "0"
       RMW_IMPLEMENTATION: "rmw_cyclonedds_cpp"
+
+      # Nạp cấu hình Cyclone DDS và cho phép discovery trong cùng subnet.
       CYCLONEDDS_URI: "file:///config/cyclonedds.xml"
       ROS_AUTOMATIC_DISCOVERY_RANGE: "SUBNET"
 
-      # GUI qua WSLg/X11.
+      # Chuyển tiếp giao diện đồ họa từ container qua WSLg/X11.
       DISPLAY: "${DISPLAY}"
       WAYLAND_DISPLAY: "${WAYLAND_DISPLAY}"
       XDG_RUNTIME_DIR: "${XDG_RUNTIME_DIR}"
       QT_X11_NO_MITSHM: "1"
 
-      # NVIDIA GPU qua Mesa D3D12 trong WSL2.
+      # Sử dụng GPU NVIDIA thông qua Mesa D3D12 trên WSL2.
       GALLIUM_DRIVER: "d3d12"
       MESA_D3D12_DEFAULT_ADAPTER_NAME: "NVIDIA"
       LD_LIBRARY_PATH: "/usr/lib/wsl/lib"
 
+    # ========================================================================
+    # GPU VÀ THIẾT BỊ
+    # ========================================================================
+    # Cho phép container sử dụng GPU do Docker Desktop cung cấp.
+    gpus: all
+
+    # Thiết bị DirectX GPU của WSL2.
+    devices:
+      - /dev/dxg:/dev/dxg
+
+    # ========================================================================
+    # VOLUME
+    # ========================================================================
     volumes:
-      # Đồng bộ workspace với thư mục dự án trên máy tính.
+      # Đồng bộ mã nguồn dự án giữa host và container.
       - ..:/ros2-ws
+
+      # File nguồn ./cyclonedds.xml phải tồn tại và phải là file, không phải thư mục.
       - ./cyclonedds.xml:/config/cyclonedds.xml:ro
 
       # Thư viện và socket đồ họa của WSL2/WSLg.
@@ -60,4 +69,5 @@ services:
       - /mnt/wslg:/mnt/wslg
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
 
+    # Giữ container hoạt động để truy cập và chạy các node ROS 2 thủ công.
     command: bash

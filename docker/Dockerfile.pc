@@ -1,25 +1,31 @@
 FROM osrf/ros:jazzy-desktop-full
 
-# Tắt hộp thoại tương tác trong quá trình cài đặt package.
+# Không hiển thị hộp thoại tương tác khi cài đặt package.
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Cấu hình locale và shell mặc định.
+# Thiết lập locale UTF-8 cho terminal, ROS 2 và công cụ build.
 ENV LANG=en_US.UTF-8 \
     LANGUAGE=en_US:en \
-    LC_ALL=en_US.UTF-8 \
-    SHELL=/usr/bin/zsh \
-    ZSH=/root/.oh-my-zsh
+    LC_ALL=en_US.UTF-8
 
-# Cấu hình ROS 2 dùng chung giữa máy phát triển và Raspberry Pi 5.
+# Cấu hình ROS 2/DDS mặc định, đồng nhất với Raspberry Pi 5.
+# CYCLONEDDS_URI được khai báo trong Compose vì file XML được bind mount lúc chạy.
 ENV ROS_DOMAIN_ID=0 \
+    ROS_LOCALHOST_ONLY=0 \
+    ROS_AUTOMATIC_DISCOVERY_RANGE=SUBNET \
     RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
 
-# Tăng tốc đồ họa bằng Mesa D3D12 khi chạy Docker trong WSL2.
+# Cấu hình Zsh và Oh My Zsh cho môi trường phát triển.
+ENV SHELL=/usr/bin/zsh \
+    ZSH=/root/.oh-my-zsh
+
+# Cho phép Mesa sử dụng GPU NVIDIA qua D3D12 trong WSL2.
+# Giữ lại LD_LIBRARY_PATH từ image nền để tránh làm mất đường dẫn thư viện hệ thống.
 ENV GALLIUM_DRIVER=d3d12 \
     MESA_D3D12_DEFAULT_ADAPTER_NAME=NVIDIA \
-    LD_LIBRARY_PATH=/usr/lib/wsl/lib
+    LD_LIBRARY_PATH=/usr/lib/wsl/lib:${LD_LIBRARY_PATH}
 
-# Cài công cụ phát triển C/C++, Python, ROS 2, đồ họa Mesa và Zsh.
+# Cài công cụ build, kiểm thử, chẩn đoán mạng/DDS, đồ họa và shell.
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     ca-certificates \
@@ -31,6 +37,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     gdb \
     git \
+    iproute2 \
+    iputils-ping \
     libegl-mesa0 \
     libgl1-mesa-dri \
     libglvnd0 \
@@ -50,34 +58,36 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     python3-venv \
     python3-wheel \
     ros-jazzy-rmw-cyclonedds-cpp \
+    tcpdump \
     tree \
     zsh \
     && locale-gen en_US.UTF-8 \
     && rm -rf /var/lib/apt/lists/*
 
-# Cài Oh My Zsh, Powerlevel10k và các plugin được khai báo trong zshrc.
+# Cài giao diện Zsh và các plugin hỗ trợ nhập lệnh.
 RUN git clone --depth=1 https://github.com/ohmyzsh/ohmyzsh.git "$ZSH" \
     && git clone --depth=1 https://github.com/romkatv/powerlevel10k.git \
-    "$ZSH/custom/themes/powerlevel10k" \
+        "$ZSH/custom/themes/powerlevel10k" \
     && git clone --depth=1 https://github.com/zsh-users/zsh-autosuggestions.git \
-    "$ZSH/custom/plugins/zsh-autosuggestions" \
+        "$ZSH/custom/plugins/zsh-autosuggestions" \
     && git clone --depth=1 https://github.com/zsh-users/zsh-syntax-highlighting.git \
-    "$ZSH/custom/plugins/zsh-syntax-highlighting"
+        "$ZSH/custom/plugins/zsh-syntax-highlighting"
 
-# Sao chép cấu hình shell và Powerlevel10k từ thư mục docker của dự án.
+# Sao chép cấu hình shell từ thư mục docker của dự án.
 COPY docker/zshrc /root/.zshrc
 COPY docker/p10k.zsh /root/.p10k.zsh
 COPY docker/ros2-functions.zsh /root/.ros2-functions.zsh
 
-# Giữ Bash hoạt động và tự động nạp môi trường ROS 2 khi cần sử dụng.
+# Tự động nạp ROS 2 Jazzy và workspace khi mở Bash tương tác.
 RUN printf '%s\n' \
     'source /opt/ros/jazzy/setup.bash' \
     'if [ -f /ros2-ws/install/setup.bash ]; then source /ros2-ws/install/setup.bash; fi' \
     >> /root/.bashrc
 
+# Workspace được bind mount từ host thông qua Docker Compose.
 WORKDIR /ros2-ws
 
-# Khởi tạo môi trường ROS 2 trước khi chạy lệnh của container.
+# Entrypoint nạp môi trường ROS 2 trước khi thực thi lệnh của container.
 COPY docker/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
