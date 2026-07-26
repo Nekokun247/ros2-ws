@@ -34,25 +34,26 @@ services:
       - /dev/dxg:/dev/dxg
 
     environment:
-      # ROS 2: phải giống cấu hình trên Raspberry Pi 5.
       ROS_DOMAIN_ID: "0"
-      RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
-      ROS_AUTOMATIC_DISCOVERY_RANGE: SUBNET
+      RMW_IMPLEMENTATION: "rmw_cyclonedds_cpp"
+      CYCLONEDDS_URI: "file:///config/cyclonedds.xml"
+      ROS_AUTOMATIC_DISCOVERY_RANGE: "SUBNET"
 
       # GUI qua WSLg/X11.
-      DISPLAY: ${DISPLAY}
-      WAYLAND_DISPLAY: ${WAYLAND_DISPLAY}
-      XDG_RUNTIME_DIR: ${XDG_RUNTIME_DIR}
+      DISPLAY: "${DISPLAY}"
+      WAYLAND_DISPLAY: "${WAYLAND_DISPLAY}"
+      XDG_RUNTIME_DIR: "${XDG_RUNTIME_DIR}"
       QT_X11_NO_MITSHM: "1"
 
       # NVIDIA GPU qua Mesa D3D12 trong WSL2.
-      GALLIUM_DRIVER: d3d12
-      MESA_D3D12_DEFAULT_ADAPTER_NAME: NVIDIA
-      LD_LIBRARY_PATH: /usr/lib/wsl/lib
+      GALLIUM_DRIVER: "d3d12"
+      MESA_D3D12_DEFAULT_ADAPTER_NAME: "NVIDIA"
+      LD_LIBRARY_PATH: "/usr/lib/wsl/lib"
 
     volumes:
       # Đồng bộ workspace với thư mục dự án trên máy tính.
       - ..:/ros2-ws
+      - ./cyclonedds.xml:/config/cyclonedds.xml:ro
 
       # Thư viện và socket đồ họa của WSL2/WSLg.
       - /usr/lib/wsl:/usr/lib/wsl:ro
