@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CycloneDDS xmlns="https://cdds.io/config">
+  <Domain Id="any">
+    <General>
+      <Interfaces>
+        <NetworkInterface autodetermine="true" priority="default"/>
+      </Interfaces>
+      <AllowMulticast>true</AllowMulticast>
+    </General>
+    <Discovery>
+      <!-- <Peers>
+        <Peer Address="192.168.1.50"/>
+        <Peer Address="192.168.1.60"/>
+      </Peers> -->
+    </Discovery>
+    <Tracing>
+      <Verbosity>config</Verbosity>
+      <OutputFile>/tmp/cyclonedds.log</OutputFile>
+    </Tracing>
+  </Domain>
+</CycloneDDS>
