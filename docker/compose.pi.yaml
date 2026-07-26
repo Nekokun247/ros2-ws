@@ -33,7 +33,7 @@ services:
       RMW_IMPLEMENTATION: "rmw_cyclonedds_cpp"
 
       # Nạp cấu hình Cyclone DDS và cho phép discovery trong cùng subnet.
-      CYCLONEDDS_URI: "file:///config/cyclonedds.xml"
+      CYCLONEDDS_URI: "file:///config/cyclonedds.pi.xml"
       ROS_AUTOMATIC_DISCOVERY_RANGE: "SUBNET"
 
     # ========================================================================
@@ -61,7 +61,7 @@ services:
       - ..:/ros2-ws
 
       # File nguồn ./cyclonedds.xml phải tồn tại và phải là file, không phải thư mục.
-      - ./cyclonedds.xml:/config/cyclonedds.xml:ro
+      - ./cyclonedds.pi.xml:/config/cyclonedds.pi.xml:ro
 
     # Giữ container hoạt động để truy cập và chạy các node ROS 2 thủ công.
     command: bash

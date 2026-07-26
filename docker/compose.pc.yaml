@@ -30,7 +30,7 @@ services:
       RMW_IMPLEMENTATION: "rmw_cyclonedds_cpp"
 
       # Nạp cấu hình Cyclone DDS và cho phép discovery trong cùng subnet.
-      CYCLONEDDS_URI: "file:///config/cyclonedds.xml"
+      CYCLONEDDS_URI: "file:///config/cyclonedds.pc.xml"
       ROS_AUTOMATIC_DISCOVERY_RANGE: "SUBNET"
 
       # Chuyển tiếp giao diện đồ họa từ container qua WSLg/X11.
@@ -70,7 +70,7 @@ services:
       - ..:/ros2-ws
 
       # File nguồn ./cyclonedds.xml phải tồn tại và phải là file, không phải thư mục.
-      - ./cyclonedds.xml:/config/cyclonedds.xml:ro
+      - ./cyclonedds.pc.xml:/config/cyclonedds.pc.xml:ro
 
       # Thư viện Mesa D3D12 (libd3d12.so, libdxcore.so) do WSL2 cung cấp — bắt buộc cho OpenGL.
       - /usr/lib/wsl:/usr/lib/wsl:ro
