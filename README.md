@@ -155,7 +155,12 @@ docker version
 docker compose version
 docker run --rm hello-world
 ```
-
+Cấp quyền Docker:
+```bash
+sudo usermod -aG docker $USER
+sudo gpasswd -a $USER docker
+newgrp docker
+````
 > Không cài thêm Docker Engine bên trong Ubuntu nếu đang sử dụng Docker Desktop, nhằm tránh tồn tại hai Docker daemon độc lập.
 
 ### Phương án thay thế: Docker Engine cài trực tiếp trong Ubuntu
