@@ -1,52 +1,51 @@
 FROM osrf/ros:jazzy-desktop-full
 
-# Không hiển thị hộp thoại tương tác khi cài đặt package.
+# --- Environment Configuration ---
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Thiết lập locale UTF-8 cho terminal, ROS 2 và công cụ build.
+# Localisation & Timezone
 ENV LANG=en_US.UTF-8 \
     LANGUAGE=en_US:en \
-    LC_ALL=en_US.UTF-8
+    LC_ALL=en_US.UTF-8 \
+    TZ=Asia/Ho_Chi_Minh
 
-# Cấu hình ROS 2/DDS mặc định, đồng nhất với Raspberry Pi 5.
-# CYCLONEDDS_URI được khai báo trong Compose vì file XML được bind mount lúc chạy.
+# ROS 2 & DDS Setup
 ENV ROS_DOMAIN_ID=0 \
     ROS_LOCALHOST_ONLY=0 \
     ROS_AUTOMATIC_DISCOVERY_RANGE=SUBNET \
     RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
 
-# Cấu hình Zsh và Oh My Zsh cho môi trường phát triển.
+# Shell Setup
 ENV SHELL=/usr/bin/zsh \
     ZSH=/root/.oh-my-zsh
 
-# Cho phép Mesa sử dụng GPU NVIDIA qua D3D12 trong WSL2.
-# Giữ lại LD_LIBRARY_PATH từ image nền để tránh làm mất đường dẫn thư viện hệ thống.
+# Graphics & Mesa (WSL2 NVIDIA D3D12)
 ENV GALLIUM_DRIVER=d3d12 \
     MESA_D3D12_DEFAULT_ADAPTER_NAME=NVIDIA \
     LD_LIBRARY_PATH=/usr/lib/wsl/lib:${LD_LIBRARY_PATH}
 
-# Cài công cụ build, kiểm thử, chẩn đoán mạng/DDS, đồ họa và shell.
+# --- Install APT Packages (Grouped & Alphabetized) ---
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential \
+    # 1. System Utilities & Shell
     ca-certificates \
+    curl \
+    git \
+    locales \
+    tzdata \
+    tree \
+    zsh \
+    # 2. Build Tools & Compilers
+    build-essential \
     clang \
     clang-format \
     clang-tidy \
     cmake \
     cppcheck \
-    curl \
     gdb \
-    git \
-    iproute2 \
-    iputils-ping \
-    libegl-mesa0 \
-    libgl1-mesa-dri \
-    libglvnd0 \
-    libglx-mesa0 \
-    locales \
-    mesa-utils \
     ninja-build \
     pkg-config \
+    # 3. Python Development Tools
+    python3-argcomplete \
     python3-autopep8 \
     python3-colcon-common-extensions \
     python3-dev \
@@ -55,39 +54,54 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     python3-pytest \
     python3-rosdep \
     python3-setuptools \
+    python3-vcstool \
     python3-venv \
     python3-wheel \
+    # 4. Networking & DDS
+    iproute2 \
+    iputils-ping \
     ros-jazzy-rmw-cyclonedds-cpp \
     tcpdump \
-    tree \
-    zsh \
+    # 5. Graphics & OpenGL (Mesa)
+    libegl-mesa0 \
+    libgl1-mesa-dri \
+    libglvnd0 \
+    libglx-mesa0 \
+    mesa-utils \
     && locale-gen en_US.UTF-8 \
     && rm -rf /var/lib/apt/lists/*
 
-# Cài giao diện Zsh và các plugin hỗ trợ nhập lệnh.
-RUN git clone --depth=1 https://github.com/ohmyzsh/ohmyzsh.git "$ZSH" \
-    && git clone --depth=1 https://github.com/romkatv/powerlevel10k.git \
-        "$ZSH/custom/themes/powerlevel10k" \
-    && git clone --depth=1 https://github.com/zsh-users/zsh-autosuggestions.git \
-        "$ZSH/custom/plugins/zsh-autosuggestions" \
-    && git clone --depth=1 https://github.com/zsh-users/zsh-syntax-highlighting.git \
-        "$ZSH/custom/plugins/zsh-syntax-highlighting"
+# --- Python Dependencies ---
+COPY docker/requirements.txt /tmp/requirements.txt
+RUN python3 -m pip install --no-cache-dir --break-system-packages -r /tmp/requirements.txt \
+    --timeout 120 \
+    --retries 5 \
+    --ignore-installed
 
-# Sao chép cấu hình shell từ thư mục docker của dự án.
+# Ghim setuptools < 80 để giữ tương thích với colcon --symlink-install
+RUN python3 -m pip install --no-cache-dir --break-system-packages --ignore-installed \
+    "setuptools<80"
+
+# --- Zsh & Oh My Zsh Setup ---
+RUN git clone --depth=1 https://github.com/ohmyzsh/ohmyzsh.git "$ZSH" \
+    && git clone --depth=1 https://github.com/romkatv/powerlevel10k.git "$ZSH/custom/themes/powerlevel10k" \
+    && git clone --depth=1 https://github.com/zsh-users/zsh-autosuggestions.git "$ZSH/custom/plugins/zsh-autosuggestions" \
+    && git clone --depth=1 https://github.com/zsh-users/zsh-syntax-highlighting.git "$ZSH/custom/plugins/zsh-syntax-highlighting"
+
+# Copy Shell Configurations
 COPY docker/zshrc /root/.zshrc
 COPY docker/p10k.zsh /root/.p10k.zsh
 COPY docker/ros2-functions.zsh /root/.ros2-functions.zsh
 
-# Tự động nạp ROS 2 Jazzy và workspace khi mở Bash tương tác.
+# Auto-source ROS 2 & Workspace cho Bash Shell
 RUN printf '%s\n' \
     'source /opt/ros/jazzy/setup.bash' \
     'if [ -f /ros2-ws/install/setup.bash ]; then source /ros2-ws/install/setup.bash; fi' \
     >> /root/.bashrc
 
-# Workspace được bind mount từ host thông qua Docker Compose.
+# --- Workspace & Entrypoint ---
 WORKDIR /ros2-ws
 
-# Entrypoint nạp môi trường ROS 2 trước khi thực thi lệnh của container.
 COPY docker/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 

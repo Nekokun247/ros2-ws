@@ -62,6 +62,7 @@ git config --global --list
 gh auth login
 gh auth status
 ```
+
 Lệnh Git:
 
 ````bash
@@ -181,6 +182,16 @@ Cấp quyền Docker:
 sudo usermod -aG docker $USER
 sudo gpasswd -a $USER docker
 newgrp docker
+````
+
+Dọn dẹp Docker:
+
+````bash
+# Kiểm tra dung lượng Docker
+docker system df
+
+# Làm sạch Docker
+docker system prune -a -f
 ````
 
 > Không cài thêm Docker Engine bên trong Ubuntu nếu đang sử dụng Docker Desktop, nhằm tránh tồn tại hai Docker daemon độc lập.

@@ -1,51 +1,39 @@
 services:
   ros2-pi:
-    # ========================================================================
-    # IMAGE VÀ CONTAINER
-    # ========================================================================
+    # --- Container & Image Setup ---
     build:
       context: ..
       dockerfile: docker/Dockerfile.pi
-
     image: ros2-jazzy-pi:latest
     container_name: ros2-pi
 
-    # Giữ STDIN và TTY để có thể truy cập shell tương tác bằng docker compose exec.
+    # Giữ shell tương tác cho docker compose exec
     stdin_open: true
     tty: true
 
-    # Tự khởi động lại container khi Raspberry Pi khởi động hoặc Docker được restart.
+    # Tự khởi động lại cùng Raspberry Pi / Docker Daemon
     restart: unless-stopped
 
-    # ========================================================================
-    # MẠNG VÀ WORKSPACE
-    # ========================================================================
-    # Dùng trực tiếp network của Raspberry Pi để DDS giao tiếp với laptop.
+    # --- Network & Workspace ---
+    # Dùng network host để giao tiếp DDS trực tiếp với PC
     network_mode: host
     working_dir: /ros2-ws
 
-    # ========================================================================
-    # BIẾN MÔI TRƯỜNG ROS 2
-    # ========================================================================
+    # --- Environment Variables ---
     environment:
-      # Hai thiết bị phải dùng cùng Domain ID và cùng RMW implementation.
+      # Cấu hình ROS 2 & RMW (Đồng bộ Domain ID với PC)
       ROS_DOMAIN_ID: "0"
       RMW_IMPLEMENTATION: "rmw_cyclonedds_cpp"
-
-      # Nạp cấu hình Cyclone DDS và cho phép discovery trong cùng subnet.
       CYCLONEDDS_URI: "file:///config/cyclonedds.pi.xml"
       ROS_AUTOMATIC_DISCOVERY_RANGE: "SUBNET"
 
-    # ========================================================================
-    # GPU VÀ THIẾT BỊ
-    # ========================================================================
-    # Cấp quyền truy cập các thiết bị serial và camera theo nhóm Linux.
+    # --- User Groups & Device Permissions ---
+    # Cấp quyền truy cập Serial, I2C, Camera & GPIO trên Raspberry Pi
     group_add:
       - dialout
       - video
 
-    # Chỉ bỏ comment những thiết bị thực sự tồn tại trên Raspberry Pi.
-    # Docker Compose sẽ không khởi động nếu một thiết bị được khai báo nhưng không tồn tại.
+    # Bỏ comment các thiết bị thực tế đang kết nối trên Raspberry Pi
     # devices:
     #   - /dev/ttyUSB0:/dev/ttyUSB0
     #   - /dev/ttyAMA0:/dev/ttyAMA0
@@ -53,15 +41,13 @@ services:
     #   - /dev/video0:/dev/video0
     #   - /dev/gpiochip0:/dev/gpiochip0
 
-    # ========================================================================
-    # VOLUME
-    # ========================================================================
+    # --- Volumes ---
     volumes:
-      # Đồng bộ mã nguồn dự án giữa host và container.
+      # Mount mã nguồn dự án
       - ..:/ros2-ws
 
-      # File nguồn ./cyclonedds.xml phải tồn tại và phải là file, không phải thư mục.
-      - ./cyclonedds.pi.xml:/config/cyclonedds.pi.xml:ro
+      # Cấu hình CycloneDDS (Bỏ :ro để entrypoint.sh ghi đè interface động)
+      - ./cyclonedds.pi.xml:/config/cyclonedds.pi.xml
 
-    # Giữ container hoạt động để truy cập và chạy các node ROS 2 thủ công.
+    # --- Runtime Command ---
     command: bash

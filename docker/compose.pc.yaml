@@ -1,83 +1,74 @@
 services:
   ros2-pc:
-    # ========================================================================
-    # IMAGE VÀ CONTAINER
-    # ========================================================================
+    # --- Container & Image Setup ---
     build:
       context: ..
       dockerfile: docker/Dockerfile.pc
-
     image: ros2-jazzy-pc:latest
     container_name: ros2-pc
 
-    # Giữ STDIN và TTY để có thể truy cập shell tương tác bằng docker compose exec.
+    # Giữ shell tương tác cho docker compose exec
     stdin_open: true
     tty: true
 
-    # ========================================================================
-    # MẠNG VÀ WORKSPACE
-    # ========================================================================
-    # Dùng trực tiếp network của WSL2 để DDS giao tiếp với Raspberry Pi 5.
+    # --- Network & Workspace ---
+    # Dùng network host của WSL2 để giao tiếp DDS với RPi 5
     network_mode: host
     working_dir: /ros2-ws
 
-    # ========================================================================
-    # BIẾN MÔI TRƯỜNG ROS 2
-    # ========================================================================
+    # --- Environment Variables ---
     environment:
-      # Hai thiết bị phải dùng cùng Domain ID và cùng RMW implementation.
+      # Cấu hình ROS 2 & RMW
       ROS_DOMAIN_ID: "0"
       RMW_IMPLEMENTATION: "rmw_cyclonedds_cpp"
-
-      # Nạp cấu hình Cyclone DDS và cho phép discovery trong cùng subnet.
       CYCLONEDDS_URI: "file:///config/cyclonedds.pc.xml"
       ROS_AUTOMATIC_DISCOVERY_RANGE: "SUBNET"
 
-      # Chuyển tiếp giao diện đồ họa từ container qua WSLg/X11.
-      # WSLg là tính năng của WSL2 (không phải Docker Desktop) nên vẫn dùng được.
+      # Chuyển tiếp GUI qua WSLg / X11
       DISPLAY: "${DISPLAY}"
       WAYLAND_DISPLAY: "${WAYLAND_DISPLAY}"
       XDG_RUNTIME_DIR: "${XDG_RUNTIME_DIR}"
       QT_X11_NO_MITSHM: "1"
 
-      # --- CUDA compute (nvidia-smi, các tác vụ CUDA) qua NVIDIA Container Toolkit ---
+      # NVIDIA Container Toolkit (CUDA Compute)
       NVIDIA_VISIBLE_DEVICES: "all"
       NVIDIA_DRIVER_CAPABILITIES: "all"
 
-      # --- OpenGL rendering (rviz2, gz sim, glxinfo) qua Mesa D3D12 + /dev/dxg ---
-      # /dev/dxg là thiết bị paravirtualization GPU của chính nhân WSL2 (dxgkrnl),
-      # KHÔNG phải cơ chế riêng của Docker Desktop, nên vẫn cần dùng dù đã chuyển
-      # sang Docker Engine cài trực tiếp trong WSL2.
+      # OpenGL Rendering qua Mesa D3D12 (WSL2 GPU Paravirtualization)
       GALLIUM_DRIVER: "d3d12"
       MESA_D3D12_DEFAULT_ADAPTER_NAME: "NVIDIA"
       LD_LIBRARY_PATH: "/usr/lib/wsl/lib"
 
-    # ========================================================================
-    # GPU VÀ THIẾT BỊ
-    # ========================================================================
-    # CUDA compute qua NVIDIA Container Toolkit (CDI).
+    # --- Hardware & Device Mapping ---
+    # Kích hoạt NVIDIA GPU (CUDA)
     gpus: all
 
-    # Thiết bị GPU paravirtualization của WSL2, cần cho OpenGL qua Mesa D3D12.
+    # Thiết bị WSL2 GPU (/dev/dxg) & Cổng Serial USB (MCU/IMU)
     devices:
       - /dev/dxg:/dev/dxg
+      # - /dev/ttyACM0:/dev/ttyACM0
 
-    # ========================================================================
-    # VOLUME
-    # ========================================================================
+    # Cấp quyền Đọc/Ghi
+    device_cgroup_rules:
+      - 'c *:* rmw'
+
+    # --- Volumes ---
     volumes:
-      # Đồng bộ mã nguồn dự án giữa host và container.
+      # Mount mã nguồn dự án
       - ..:/ros2-ws
 
-      # File nguồn ./cyclonedds.xml phải tồn tại và phải là file, không phải thư mục.
-      - ./cyclonedds.pc.xml:/config/cyclonedds.pc.xml:ro
+      # Cấu hình CycloneDDS (Bỏ :ro để entrypoint.sh ghi đè interface động)
+      - ./cyclonedds.pc.xml:/config/cyclonedds.pc.xml
 
-      # Thư viện Mesa D3D12 (libd3d12.so, libdxcore.so) do WSL2 cung cấp — bắt buộc cho OpenGL.
+      # Thư viện driver WSL2 (OpenGL Mesa D3D12)
       - /usr/lib/wsl:/usr/lib/wsl:ro
 
-      # Socket đồ họa X11/Wayland do WSLg cung cấp.
+      # Sockets hiển thị giao diện WSLg / X11
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
       - /mnt/wslg:/mnt/wslg
 
-    # Giữ container hoạt động để truy cập và chạy các node ROS 2 thủ công.
+      # Đồng bộ trực tiếp toàn bộ thư mục thiết bị từ Host vào Container
+      - /dev:/dev
+
+    # --- Runtime Command ---
     command: bash

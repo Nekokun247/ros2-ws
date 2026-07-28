@@ -1,0 +1,46 @@
+# ==============================
+# Core numerical computing
+# ==============================
+numpy
+scipy
+pandas
+
+# ==============================
+# Data visualization
+# ==============================
+matplotlib
+seaborn
+
+# ==============================
+# Image and video processing
+# ==============================
+opencv-python
+# opencv-contrib-python
+# pillow
+# scikit-image
+# imageio
+
+# ==============================
+# AI and object detection
+# ==============================
+ultralytics
+
+# ==============================
+# Hardware and communication
+# ==============================
+pyserial
+paho-mqtt
+requests
+websockets
+# python-can
+# pymodbus
+
+# ==============================
+# Python development tools
+# ==============================
+black
+ruff
+pylint
+mypy
+pytest
+ipython

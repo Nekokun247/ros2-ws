@@ -1,34 +1,36 @@
 #!/bin/bash
 set -e
 
-# Nạp môi trường ROS 2 Jazzy.
+# --- Nạp Môi Trường ROS 2 & Workspace ---
 source /opt/ros/jazzy/setup.bash
 
-# Nạp workspace nếu đã được build.
 if [ -f "/ros2-ws/install/setup.bash" ]; then
     source /ros2-ws/install/setup.bash
 fi
 
-# ==============================================================================
-# Tự động phát hiện network interface đang active (WiFi hoặc LAN, bất kể tên
-# gì) và sinh file cấu hình Cyclone DDS tương ứng, để không cần sửa tay mỗi
-# khi đổi mạng (WiFi <-> LAN, đổi sang WiFi khác, v.v.)
-# ==============================================================================
-CYCLONEDDS_RUNTIME_CONFIG="/tmp/cyclonedds-runtime.xml"
+# --- Cấu Hình Đường Dẫn File CycloneDDS ---
+# Ghi đè trực tiếp vào file config cố định để các phiên `docker exec` đều nhận
+if [[ "$CYCLONEDDS_URI" == file://* ]]; then
+    CYCLONEDDS_CONFIG_PATH="${CYCLONEDDS_URI#file://}"
+else
+    CYCLONEDDS_CONFIG_PATH="/tmp/cyclonedds-runtime.xml"
+    export CYCLONEDDS_URI="file://${CYCLONEDDS_CONFIG_PATH}"
+fi
 
-# Lấy interface đang có "default route" (tức đang thực sự dùng để ra mạng).
+# --- Tự Động Phát Hiện Network Interface Active ---
+# Tìm card mạng chính có default route
 DETECTED_IFACE=$(ip route show default 2>/dev/null | awk '/default/ {print $5; exit}')
 
 if [ -z "$DETECTED_IFACE" ]; then
-    echo "[entrypoint] Không tìm thấy interface có default route." >&2
-    echo "[entrypoint] Fallback sang autodetermine=true." >&2
+    echo "[entrypoint] Không tìm thấy default route -> Fallback: autodetermine" >&2
     IFACE_TAG='<NetworkInterface autodetermine="true" priority="default"/>'
 else
-    echo "[entrypoint] Phát hiện interface đang active: $DETECTED_IFACE"
+    echo "[entrypoint] Interface đang active: $DETECTED_IFACE"
     IFACE_TAG="<NetworkInterface name=\"$DETECTED_IFACE\" priority=\"default\"/>"
 fi
 
-cat > "$CYCLONEDDS_RUNTIME_CONFIG" <<EOF
+# --- Tạo File Cấu Hình CycloneDDS XML ---
+cat > "$CYCLONEDDS_CONFIG_PATH" <<EOF
 <?xml version="1.0" encoding="UTF-8"?>
 <CycloneDDS xmlns="https://cdds.io/config">
   <Domain Id="any">
@@ -47,11 +49,8 @@ cat > "$CYCLONEDDS_RUNTIME_CONFIG" <<EOF
 </CycloneDDS>
 EOF
 
-echo "[entrypoint] Đã sinh file cấu hình Cyclone DDS: $CYCLONEDDS_RUNTIME_CONFIG"
+echo "[entrypoint] Cập nhật CycloneDDS tại: $CYCLONEDDS_CONFIG_PATH"
+echo "[entrypoint] CYCLONEDDS_URI: $CYCLONEDDS_URI"
 
-# Ghi đè CYCLONEDDS_URI để dùng đúng file vừa sinh, bất kể giá trị nào đã
-# được set sẵn trong docker-compose.yml (ví dụ cyclonedds.pi.xml/pc.xml cũ).
-export CYCLONEDDS_URI="file://${CYCLONEDDS_RUNTIME_CONFIG}"
-
-# Thực thi lệnh được truyền từ Dockerfile hoặc Docker Compose.
+# --- Chuyển Quyền Điều Khiển Cho Tiến Trình Chính Của Container ---
 exec "$@"
