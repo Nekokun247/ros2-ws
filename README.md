@@ -1,6 +1,6 @@
 # Thiết lập môi trường phát triển ROS 2 trên WSL2
 
-Tài liệu này dành cho Ubuntu 24.04 chạy trong WSL2, sử dụng ROS 2 Jazzy và Docker Desktop.
+Tài liệu này dành cho Ubuntu 24.04 chạy trong WSL2, sử dụng ROS 2 Jazzy.
 
 ## 1. Cập nhật hệ thống
 
@@ -69,6 +69,7 @@ Lệnh Git:
 git add .
 git commit -m ""
 git push origin main
+
 # Pull
 git pull --rebase origin main
 ````
@@ -165,12 +166,14 @@ docker version
 docker compose version
 docker run --rm hello-world
 ```
+
 Cấp quyền Docker:
 ```bash
 sudo usermod -aG docker $USER
 sudo gpasswd -a $USER docker
 newgrp docker
 ````
+
 > Không cài thêm Docker Engine bên trong Ubuntu nếu đang sử dụng Docker Desktop, nhằm tránh tồn tại hai Docker daemon độc lập.
 
 ### Phương án thay thế: Docker Engine cài trực tiếp trong Ubuntu
@@ -333,3 +336,19 @@ colcon-build my_package
 colcon-build package_a package_b
 colcon-build-all
 ```
+
+## 12. Chia sẻ PORT
+Cấp quyền Share và kiểm tra
+
+````bash
+usbipd detach --busid 1-4
+usbipd bind --force --busid 1-4
+usbipd list
+````
+
+Chia sẻ
+
+````bash
+usbipd attach --wsl --busid 1-4
+usbipd list
+````
