@@ -95,9 +95,17 @@ sudo apt install -y \
   ninja-build \
   pkg-config \
   gdb \
+  clang \
+  clangd \
+  clang-format \
+  clang-tidy \
+  cppcheck \
+  valgrind \
   python3-pip \
   python3-venv \
-  python3-dev
+  python3-dev \
+  python3-tk \
+  usbutils
 ```
 
 ## 6. Cài công cụ mạng và chẩn đoán DDS
