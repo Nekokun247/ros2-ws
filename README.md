@@ -284,6 +284,20 @@ printenv ROS_DISTRO
 ros2 --help
 ```
 
+Chạy lại daemon:
+
+````bash
+timeout 2 ros2 daemon stop || true
+
+DAEMON_PID=$(pgrep -f '[r]os2_daemon')
+if [[ -n "$DAEMON_PID" ]]; then
+    kill -9 $DAEMON_PID
+fi
+
+rm -rf ~/.ros/ros2cli
+timeout 5 ros2 daemon start
+````
+
 ## 11. Alias build workspace ROS 2
 
 Thêm vào `~/.zshrc`:
