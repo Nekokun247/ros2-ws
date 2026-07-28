@@ -279,6 +279,8 @@ ros2 --help
 
 Thêm vào `~/.zshrc`:
 
+> Alias khi dùng trên PC
+
 ```zsh
 # === ROS2 Docker ===
 
