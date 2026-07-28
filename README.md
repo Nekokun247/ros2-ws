@@ -368,17 +368,26 @@ colcon-build-all
 ```
 
 ## 12. Chia sẻ PORT
-Cấp quyền Share và kiểm tra
+Kiểm tra Port USB:
 
 ````bash
-usbipd detach --busid 1-4
-usbipd bind --force --busid 1-4
 usbipd list
 ````
 
-Chia sẻ
+Chia sẻ:
 
 ````bash
+# Bind để gán
+usbipd bind --force --busid 1-4
+# Attach để bắt đầu chia sẻ
 usbipd attach --wsl --busid 1-4
-usbipd list
+````
+
+Hùy chia sẻ:
+
+````bash
+# Ubind để xóa gán
+usbipd unbind --guid <ID>
+# Attach để ngắt chia sẻ
+usbipd detach --busid 1-4
 ````
