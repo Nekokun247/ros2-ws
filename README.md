@@ -176,6 +176,7 @@ docker run --rm hello-world
 ```
 
 Cấp quyền Docker:
+
 ```bash
 sudo usermod -aG docker $USER
 sudo gpasswd -a $USER docker
