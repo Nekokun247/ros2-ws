@@ -388,6 +388,6 @@ Hùy chia sẻ:
 ````bash
 # Ubind để xóa gán
 usbipd unbind --guid <ID>
-# Attach để ngắt chia sẻ
+# Detach để ngắt chia sẻ
 usbipd detach --busid 1-4
 ````
