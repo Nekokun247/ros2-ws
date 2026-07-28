@@ -3,11 +3,10 @@
   <Domain Id="any">
     <General>
       <Interfaces>
-        <NetworkInterface name="wlan0" priority="default"/>
+        <NetworkInterface name="autoselect" priority="default"/>
       </Interfaces>
       <AllowMulticast>true</AllowMulticast>
     </General>
-
     <Tracing>
       <Verbosity>config</Verbosity>
       <OutputFile>/tmp/cyclonedds.log</OutputFile>

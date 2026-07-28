@@ -3,11 +3,10 @@
   <Domain Id="any">
     <General>
       <Interfaces>
-        <NetworkInterface name="eth1" priority="default"/>
+        <NetworkInterface name="eth0" priority="default"/>
       </Interfaces>
       <AllowMulticast>true</AllowMulticast>
     </General>
-
     <Tracing>
       <Verbosity>config</Verbosity>
       <OutputFile>/tmp/cyclonedds.log</OutputFile>
