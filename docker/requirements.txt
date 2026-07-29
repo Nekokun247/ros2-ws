@@ -1,7 +1,7 @@
 # ==============================
 # Core numerical computing
 # ==============================
-numpy
+numpy<2
 scipy
 pandas
 

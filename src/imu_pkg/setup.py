@@ -24,7 +24,8 @@ setup(
     },
     entry_points={
         'console_scripts': [
-            'imu_pub = imu_pkg.imu_pub:main'
+            'imu_pub = imu_pkg.imu_pub:main',
+            'imu_sub = imu_pkg.imu_sub:main'
         ],
     },
 )

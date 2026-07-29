@@ -68,6 +68,42 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libglvnd0 \
     libglx-mesa0 \
     mesa-utils \
+    # 6. ROS2 Package
+    ## Xử lý ảnh
+    ros-jazzy-camera-info-manager \
+    ros-jazzy-cv-bridge \
+    ros-jazzy-image-pipeline \
+    ros-jazzy-image-transport \
+    ros-jazzy-image-transport-plugins \
+    ros-jazzy-vision-opencv \
+    ## Driver camera cho Raspberry Pi
+    ros-jazzy-v4l2-camera \
+    ## IMU & Sensor Fusion
+    ros-jazzy-imu-filter-madgwick \
+    ros-jazzy-robot-localization \
+    ## SLAM
+    ros-jazzy-nav2-map-server \
+    ros-jazzy-slam-toolbox \
+    ## Mô phỏng Gazebo & Điều khiển
+    ros-jazzy-gz-ros2-control \
+    ros-jazzy-ros-gz \
+    ros-jazzy-ros-gz-bridge \
+    ros-jazzy-ros-gz-sim \
+    ros-jazzy-ros2-control \
+    ros-jazzy-ros2-controllers \
+    ## Robot model & TF
+    ros-jazzy-joint-state-publisher \
+    ros-jazzy-robot-state-publisher \
+    ros-jazzy-tf-transformations \
+    ros-jazzy-tf2-tools \
+    ros-jazzy-xacro \
+    ## Logs
+    ros-jazzy-rosbag2-storage-mcap \
+    ## Giám sát hệ thống
+    ros-jazzy-diagnostic-aggregator \
+    ros-jazzy-diagnostic-updater \
+    ## Test
+    ros-jazzy-teleop-twist-keyboard \
     && locale-gen en_US.UTF-8 \
     && rm -rf /var/lib/apt/lists/*
 
